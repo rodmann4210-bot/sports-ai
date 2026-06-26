@@ -317,8 +317,7 @@ async function buildCity() {
 // ── BUILD LEAGUE CONTEXT ──
 async function buildLeague() {
   try {
-    const [standData, scoreData, leadData, eraData, whipData] = await Promise.allSettled([
-      espn('/baseball/mlb/standings', '', true),
+    const [scoreData, leadData, eraData, whipData] = await Promise.allSettled([
       espn('/baseball/mlb/scoreboard'),
       espn('/baseball/mlb/leaders'),
       espn('/baseball/mlb/leaders', 'categories=earnedRunAverage'),
@@ -327,31 +326,26 @@ async function buildLeague() {
 
     let ctx = 'MLB 2026 Season — League-Wide Data\n\n';
 
-    // Standings — recursive tree walker
-    if (standData.status === 'fulfilled') {
+    // Standings — MLB Stats API (CORS-open)
+    const DIV_NAMES = {200:'AL West',201:'AL East',202:'AL Central',203:'NL West',204:'NL East',205:'NL Central'};
+    try {
+      const sData = await getJSON('https://statsapi.mlb.com/api/v1/standings?leagueId=103,104&season=2026&standingsTypes=regularSeason');
+      const divOrder = [201,202,200,204,205,203];
+      const divMap = {};
+      (sData.records||[]).forEach(rec => { divMap[rec.division.id] = rec.teamRecords||[]; });
       ctx += 'STANDINGS:\n';
-      const allDivs = [];
-      const walkStand = (node) => {
-        if (!node || typeof node !== 'object') return;
-        const entries = (node.standings && node.standings.entries) || node.entries || [];
-        if (entries.length && entries[0] && entries[0].team) {
-          allDivs.push({name: node.name || node.abbreviation || '', entries});
-          return;
-        }
-        (node.children || []).forEach(walkStand);
-      };
-      (standData.value.children || [standData.value]).forEach(walkStand);
-      allDivs.forEach(div => {
-        ctx += '\n' + div.name + ':\n';
-        div.entries.forEach((e,i) => {
-          const t = e.team || {};
-          const name = t.shortDisplayName || t.displayName || '?';
-          const stats = e.stats || [];
-          const gs = n => (stats.find(s=>s.name===n||s.abbreviation===n)||{}).displayValue||'—';
-          ctx += (i+1)+'. '+name+': '+(gs('wins')||gs('W'))+'-'+(gs('losses')||gs('L'))+' ('+(gs('winPercent')||gs('PCT'))+') GB:'+(gs('gamesBehind')||gs('GB'))+'\n';
+      divOrder.forEach(divId => {
+        const teams = divMap[divId]; if(!teams||!teams.length) return;
+        ctx += '\n' + (DIV_NAMES[divId]||divId) + ':\n';
+        teams.forEach((t,i) => {
+          const name = t.team.name||'?';
+          const w = t.leagueRecord.wins; const l = t.leagueRecord.losses;
+          const pct = t.leagueRecord.pct||t.winningPercentage||'—';
+          const gb = t.gamesBack||'—';
+          ctx += (i+1)+'. '+name+': '+w+'-'+l+' ('+pct+') GB:'+gb+'\n';
         });
       });
-    }
+    } catch(e) { ctx += 'Standings unavailable.\n'; }
 
     // Today's scores
     if (scoreData.status === 'fulfilled') {
