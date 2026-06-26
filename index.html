@@ -1,0 +1,482 @@
+<!-- © 2026 Roderick Grimes. All rights reserved. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sports AI Hub — Ask the Stats</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#07101f;--bg-2:#0a1528;--panel:#0e1c35;--panel-2:#122040;
+    --ink:#eef2f8;--muted:#8a99b8;--muted-2:#4a5870;
+    --gold:#f3c14b;--gold-dim:#c79a3a;
+    --accent:#e03c5a;--accent-2:#b02040;
+    --line:rgba(243,193,75,.18);--line-soft:rgba(243,193,75,.08);
+    --glow:rgba(224,60,90,.3);--stripe:rgba(243,193,75,.015)
+  }
+  body.sport-cardinals{--accent:#c41e3a;--accent-2:#7a0c1f;--glow:rgba(196,30,58,.35)}
+  body.sport-nascar{--accent:#FF7A29;--accent-2:#cc5500;--glow:rgba(255,122,41,.3)}
+  body.sport-city{--accent:#E0314B;--accent-2:#a01e31;--glow:rgba(224,49,75,.3)}
+  body.sport-league{--accent:#2980d4;--accent-2:#1a5fa0;--glow:rgba(41,128,212,.3)}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg);color:var(--ink);font-family:'Barlow',sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh}
+  body{background:radial-gradient(1000px 500px at 70% -10%,var(--glow),transparent 60%),repeating-linear-gradient(135deg,var(--stripe) 0 2px,transparent 2px 26px),var(--bg);background-attachment:fixed;padding:0 0 60px;transition:background .4s}
+  .wrap{max-width:900px;margin:0 auto;padding:0 20px}
+  header{padding:40px 0 32px;text-align:center;border-bottom:1px solid var(--line-soft)}
+  .logo{display:inline-flex;align-items:center;gap:14px;margin-bottom:16px}
+  .logo-icon{width:52px;height:52px;border-radius:10px;background:linear-gradient(160deg,var(--accent),var(--accent-2));border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 6px 24px rgba(0,0,0,.5);transition:background .4s}
+  h1{font-family:'Oswald';font-weight:700;font-size:32px;letter-spacing:1px;text-transform:uppercase;line-height:1}
+  h1 span{color:var(--gold)}
+  .sub{font-family:'Barlow Condensed';font-weight:600;letter-spacing:3px;font-size:12px;color:var(--muted);text-transform:uppercase;margin-top:8px}
+  .sport-tabs{display:flex;gap:0;justify-content:center;margin-top:28px;border:1px solid var(--line-soft);border-radius:10px;overflow:hidden;background:var(--panel)}
+  .sport-tab{flex:1;font-family:'Oswald';font-weight:700;letter-spacing:1.5px;font-size:13px;text-transform:uppercase;padding:13px 8px;cursor:pointer;border:none;background:none;color:var(--muted-2);transition:all .2s;border-right:1px solid var(--line-soft);position:relative}
+  .sport-tab:last-child{border-right:none}
+  .sport-tab:hover{color:var(--ink);background:rgba(255,255,255,.04)}
+  .sport-tab.active{color:var(--gold);background:rgba(243,193,75,.08)}
+  .sport-tab.active::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--accent);transition:background .4s}
+  .sport-tab .tab-icon{display:block;font-size:18px;margin-bottom:4px}
+  .sport-tab .tab-label{display:block;font-size:11px}
+  .query-section{margin-top:32px}
+  .query-label{font-family:'Barlow Condensed';font-weight:600;letter-spacing:2px;font-size:12px;color:var(--muted-2);text-transform:uppercase;margin-bottom:10px}
+  .query-box{display:flex;gap:10px;align-items:flex-start}
+  .query-input{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:10px;color:var(--ink);font-family:'Barlow';font-size:16px;padding:14px 16px;outline:none;resize:none;min-height:52px;max-height:140px;line-height:1.5;transition:border-color .2s}
+  .query-input:focus{border-color:var(--accent)}
+  .query-input::placeholder{color:var(--muted-2)}
+  .query-btn{background:linear-gradient(160deg,var(--accent),var(--accent-2));border:none;color:#fff;font-family:'Oswald';font-weight:700;letter-spacing:1.5px;font-size:14px;text-transform:uppercase;border-radius:10px;padding:14px 24px;cursor:pointer;white-space:nowrap;transition:all .2s;flex:none;box-shadow:0 4px 16px rgba(0,0,0,.4)}
+  .query-btn:hover{opacity:.9;transform:translateY(-1px)}
+  .query-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .chip{font-family:'Barlow Condensed';font-weight:600;font-size:12px;letter-spacing:.5px;padding:6px 14px;border:1px solid var(--line-soft);border-radius:20px;color:var(--muted);cursor:pointer;transition:all .15s;background:rgba(255,255,255,.03)}
+  .chip:hover{border-color:var(--accent);color:var(--gold);background:rgba(243,193,75,.05)}
+  .answer-box{margin-top:24px;padding:20px;background:var(--panel);border:1px solid var(--line-soft);border-radius:12px;font-family:'Barlow';font-size:15px;line-height:1.8;color:var(--ink);display:none;box-shadow:0 8px 32px rgba(0,0,0,.3)}
+  .answer-box.visible{display:block}
+  .answer-box strong{color:var(--gold)}
+  .answer-sport-tag{font-family:'Barlow Condensed';font-weight:700;letter-spacing:1.5px;font-size:11px;text-transform:uppercase;color:var(--accent);margin-bottom:12px;display:block;transition:color .4s}
+  .thinking{color:var(--muted-2);font-family:'Barlow Condensed';letter-spacing:1px;font-size:13px;text-transform:uppercase;animation:blink 1.2s infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+  .answer-footer{margin-top:12px;font-family:'Barlow Condensed';font-size:11px;letter-spacing:.5px;color:var(--muted-2);border-top:1px solid var(--line-soft);padding-top:10px}
+  .history-section{margin-top:32px}
+  .history-hd{font-family:'Barlow Condensed';font-weight:600;letter-spacing:2px;font-size:12px;color:var(--muted-2);text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
+  .history-clear{font-size:11px;color:var(--muted-2);cursor:pointer;border:1px solid var(--line-soft);padding:3px 10px;border-radius:4px;background:none;font-family:'Barlow Condensed';letter-spacing:.5px;transition:all .15s}
+  .history-clear:hover{color:var(--accent);border-color:var(--accent)}
+  .history-list{display:flex;flex-direction:column;gap:10px}
+  .history-item{background:var(--panel);border:1px solid var(--line-soft);border-radius:8px;padding:14px 16px;cursor:pointer;transition:all .15s}
+  .history-item:hover{border-color:var(--line);background:var(--panel-2)}
+  .history-q{font-family:'Oswald';font-weight:500;font-size:14px;color:var(--ink)}
+  .history-meta{font-family:'Barlow Condensed';font-size:11px;letter-spacing:.5px;color:var(--muted-2);margin-top:4px}
+  .history-a{font-family:'Barlow';font-size:13px;color:var(--muted);margin-top:8px;line-height:1.5;border-top:1px solid var(--line-soft);padding-top:8px}
+  .dashlinks{margin-top:40px;border-top:1px solid var(--line-soft);padding-top:28px}
+  .dashlinks-hd{font-family:'Barlow Condensed';font-weight:600;letter-spacing:2px;font-size:12px;color:var(--muted-2);text-transform:uppercase;margin-bottom:14px}
+  .dashlinks-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .dashlink{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--panel);border:1px solid var(--line-soft);border-radius:8px;font-family:'Barlow';font-weight:600;font-size:14px;transition:all .15s;text-decoration:none;color:var(--ink)}
+  .dashlink:hover{border-color:var(--line);background:var(--panel-2);color:var(--gold);transform:translateY(-1px)}
+  .dashlink .dl-icon{font-size:18px}
+  .dashlink .dl-ar{margin-left:auto;color:var(--muted-2);font-size:12px}
+  .page-footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--line-soft);font-family:'Barlow Condensed';font-size:12px;letter-spacing:.5px;color:var(--muted-2);text-align:center}
+  @media(max-width:600px){.sport-tabs{flex-wrap:wrap}.sport-tab{flex:1 0 33%}.dashlinks-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body class="sport-cardinals">
+<div class="wrap">
+  <header>
+    <div class="logo">
+      <div class="logo-icon" id="logoIcon">⚾</div>
+      <div>
+        <h1>Sports <span>AI</span> Hub</h1>
+        <div class="sub">Ask anything &middot; All your teams &middot; Live data</div>
+      </div>
+    </div>
+    <div class="sport-tabs" id="sportTabs">
+      <button class="sport-tab active" data-sport="cardinals"><span class="tab-icon">⚾</span><span class="tab-label">Cardinals</span></button>
+      <button class="sport-tab" data-sport="nascar"><span class="tab-icon">🏁</span><span class="tab-label">NASCAR</span></button>
+      <button class="sport-tab" data-sport="city"><span class="tab-icon">⚽</span><span class="tab-label">City SC</span></button>
+      <button class="sport-tab" data-sport="league"><span class="tab-icon">🌐</span><span class="tab-label">MLB League</span></button>
+    </div>
+  </header>
+
+  <div class="query-section">
+    <div class="query-label" id="queryLabel">Ask about the Cardinals</div>
+    <div class="query-box">
+      <textarea class="query-input" id="queryInput" placeholder="Who leads the team in HR? Best ERA among starters? How is Walker performing?" rows="1"></textarea>
+      <button class="query-btn" id="queryBtn">Ask</button>
+    </div>
+    <div class="chips" id="chips">
+      <span class="chip">Who leads in HR?</span>
+      <span class="chip">Best ERA among starters</span>
+      <span class="chip">Top 3 in WAR</span>
+      <span class="chip">Jordan Walker's stats</span>
+      <span class="chip">Compare Burleson and Walker</span>
+      <span class="chip">Team batting average</span>
+    </div>
+    <div class="answer-box" id="answerBox">
+      <span class="answer-sport-tag" id="answerTag">Cardinals</span>
+      <div id="answerText"></div>
+      <div class="answer-footer" id="answerFooter"></div>
+    </div>
+  </div>
+
+  <div class="history-section" id="historySection" style="display:none">
+    <div class="history-hd">
+      Recent Questions
+      <button class="history-clear" id="historyClear">Clear</button>
+    </div>
+    <div class="history-list" id="historyList"></div>
+  </div>
+
+  <div class="dashlinks">
+    <div class="dashlinks-hd">Open a Dashboard</div>
+    <div class="dashlinks-grid">
+      <a class="dashlink" href="https://rodmann4210-bot.github.io/cardinals_watch/" target="_blank" rel="noopener"><span class="dl-icon">⚾</span> Cardinals Watch <span class="dl-ar">↗</span></a>
+      <a class="dashlink" href="https://rodmann4210-bot.github.io/nascar_watch/" target="_blank" rel="noopener"><span class="dl-icon">🏁</span> NASCAR Watch <span class="dl-ar">↗</span></a>
+      <a class="dashlink" href="https://rodmann4210-bot.github.io/stl_city/" target="_blank" rel="noopener"><span class="dl-icon">⚽</span> City SC Watch <span class="dl-ar">↗</span></a>
+    </div>
+  </div>
+
+  <div class="page-footer">&copy; 2026 R. Grimes &middot; All rights reserved &middot; Powered by Claude</div>
+</div>
+
+<script>
+const SPORTS_AI_URL = 'https://sports-ai-phi.vercel.app/api/ask';
+const ESPN_PROXY    = 'https://sports-ai-phi.vercel.app/api/espn';
+const STATS_JSON    = 'https://raw.githubusercontent.com/rodmann4210-bot/cardinals_watch/main/cardinals_stats.json';
+const MLS_SITE      = 'https://site.api.espn.com/apis/site/v2/sports/soccer/usa.1';
+const NASCAR_SITE   = 'https://site.api.espn.com/apis/site/v2/sports/racing/nascar-premier';
+const CITY_ID = '21812';
+const JGR = {'747':'Denny Hamlin','4773':'Chase Briscoe','4700':'Christopher Bell','5651':'Ty Gibbs'};
+
+const $ = id => document.getElementById(id);
+let curSport = 'cardinals';
+let statsData = null;
+let qaHistory = JSON.parse(localStorage.getItem('sai_history') || '[]');
+
+// Route ESPN calls through Vercel proxy to avoid CORS blocks
+function espn(path, qs, web) {
+  const base = web ? 'https://site.web.api.espn.com/apis/v2/sports' : 'https://site.api.espn.com/apis/site/v2/sports';
+  const url = ESPN_PROXY + '?base=' + encodeURIComponent(base) + '&path=' + encodeURIComponent(path) + (qs ? '&qs=' + encodeURIComponent(qs) : '');
+  return getJSON(url);
+}
+
+const SPORT_CFG = {
+  cardinals: {
+    label: 'Ask about the Cardinals',
+    tag: 'St. Louis Cardinals',
+    icon: '\u26be',
+    bodyClass: 'sport-cardinals',
+    chips: ['Who leads in HR?','Best ERA among starters','Top 3 in WAR','Jordan Walker\'s stats','Compare Burleson and Walker','Team batting average']
+  },
+  nascar: {
+    label: 'Ask about NASCAR / JGR',
+    tag: 'NASCAR \u00b7 Joe Gibbs Racing',
+    icon: '\ud83c\udfc1',
+    bodyClass: 'sport-nascar',
+    chips: ['Where does Denny Hamlin stand?','JGR standings this season','Who leads in wins?','How is Christopher Bell doing?','Ty Gibbs results','Next race on the schedule']
+  },
+  city: {
+    label: 'Ask about St. Louis City SC',
+    tag: 'St. Louis City SC \u00b7 MLS',
+    icon: '\u26bd',
+    bodyClass: 'sport-city',
+    chips: ['Recent results','Next match','Current conference position','How many points do we have?','Recent form','Next opponent']
+  },
+  league: {
+    label: 'Ask about MLB League-Wide',
+    tag: 'MLB 2026 \u00b7 All Teams',
+    icon: '\ud83c\udf10',
+    bodyClass: 'sport-league',
+    chips: ['Who leads MLB in home runs?','Best ERA in baseball','NL Central standings','AL standings','Cardinals vs league average','Top 5 pitchers by ERA','Who has the most stolen bases?','Best team record in baseball']
+  }
+};
+
+async function getJSON(u) {
+  const r = await fetch(u, {cache:'no-store'});
+  if (!r.ok) throw new Error(r.status);
+  return r.json();
+}
+
+// ── CONTEXT BUILDERS ──
+async function buildCardinals() {
+  if (!statsData) {
+    try { statsData = await getJSON(STATS_JSON); } catch(e) { return 'Cardinals stats database unavailable.'; }
+  }
+  const sections = [];
+  const batting = (statsData['Batting']||[]).filter(r=>r.Player&&r.Player!=='Team Totals');
+  if (batting.length) sections.push('BATTING:\n'+batting.map(r=>`${r.Player}: G=${r.G}, H=${r.H}, HR=${r.HR}, RBI=${r.RBI}, BA=${r.BA}, OBP=${r.OBP}, SLG=${r.SLG}, OPS+=${r['OPS+']}, WAR=${r.WAR}`).join('\n'));
+  const pitching = (statsData['Cardinals_Pitching']||[]).filter(r=>r.Player&&r.Player!=='Team Totals');
+  if (pitching.length) sections.push('PITCHING:\n'+pitching.map(r=>`${r.Player}: Pos=${r.Pos}, W=${r.W}, L=${r.L}, ERA=${r.ERA}, IP=${r.IP}, SO=${r.SO}, WHIP=${r.WHIP}, WAR=${r.WAR}`).join('\n'));
+  const war = (statsData['value_batting']||[]).filter(r=>r.Player&&r.Player!=='Team Totals');
+  if (war.length) sections.push('WAR:\n'+war.map(r=>`${r.Player}: WAR=${r.WAR}, oWAR=${r.oWAR}, dWAR=${r.dWAR}`).join('\n'));
+  const sched = (statsData['Schedule']||[]).filter(r=>r['W/L']&&r['W/L']!=='');
+  if (sched.length) { const last=sched[sched.length-1]; sections.push(`RECORD: ${last['W-L']} through game ${last['Gm#']}`); }
+  return sections.join('\n\n');
+}
+
+async function buildNASCAR() {
+  try {
+    const [sb, standTop] = await Promise.allSettled([
+      getJSON(`${NASCAR_SITE}/scoreboard`),
+      getJSON('https://sports.core.api.espn.com/v2/sports/racing/leagues/nascar-premier/seasons/2026/types/2/standings')
+    ]);
+    let ctx = 'NASCAR Cup Series 2026\n\n';
+    if (sb.status==='fulfilled') {
+      const events = sb.value.events||[];
+      const last = events.filter(e=>e.status&&e.status.type&&e.status.type.completed).slice(-1)[0];
+      const next = events.find(e=>e.status&&e.status.type&&!e.status.type.completed);
+      if (last) ctx += 'LAST RACE: '+(last.shortName||last.name)+'\n';
+      if (next) ctx += 'NEXT RACE: '+(next.shortName||next.name)+' on '+new Date(next.date).toLocaleDateString()+'\n';
+      ctx += '\nJGR DRIVERS:\n';
+      Object.entries(JGR).forEach(([id,name])=>{
+        let lastFinish='—';
+        events.filter(e=>e.status&&e.status.type&&e.status.type.completed).slice(-5).forEach(ev=>{
+          const comp=(ev.competitions&&ev.competitions[0])||{};
+          const c=(comp.competitors||[]).find(c=>String(c.id||'')===id||(c.athlete&&String(c.athlete.id||'')===id));
+          if(c) lastFinish=c.order||'—';
+        });
+        ctx += name+': Last finish='+lastFinish+'\n';
+      });
+    }
+    if (standTop.status==='fulfilled') {
+      const ref=(standTop.value.items&&standTop.value.items[0]&&standTop.value.items[0]['$ref'])||'';
+      if (ref) {
+        const standData = await getJSON(ref.replace('http://','https://'));
+        const sbData = await getJSON(`${NASCAR_SITE}/scoreboard`);
+        const driverNames={};
+        (sbData.events||[]).forEach(ev=>{((ev.competitions&&ev.competitions[0]&&ev.competitions[0].competitors)||[]).forEach(c=>{const id=String(c.id||(c.athlete&&c.athlete.id)||'');const name=(c.athlete&&(c.athlete.displayName||c.athlete.fullName))||'';if(id&&name)driverNames[id]=name;});});
+        const rows = (standData.standings||[]).slice(0,15);
+        ctx += '\nCUP STANDINGS (Top 15):\n';
+        rows.forEach(row=>{
+          const athleteRef=(row.athlete&&row.athlete['$ref'])||'';
+          const idMatch=athleteRef.match(/athletes\/(\d+)/);
+          const id=idMatch?idMatch[1]:'';
+          const name=driverNames[id]||(JGR[id]&&JGR[id])||('Driver #'+id);
+          const stats=((row.records&&row.records[0])||{}).stats||[];
+          const gs=n=>(stats.find(s=>s.name===n||s.abbreviation===n)||{}).displayValue||'—';
+          ctx += name+': Pts='+(gs('championshipPts')||gs('PTS'))+', Wins='+(gs('wins')||gs('W'))+'\n';
+        });
+      }
+    }
+    return ctx;
+  } catch(e) { return 'NASCAR data unavailable.'; }
+}
+
+async function buildCity() {
+  try {
+    const CITY_DATES = ['20260503','20260509','20260513','20260516','20260523','20260716','20260722','20260725'];
+    const today = new Date().toISOString().slice(0,10).replace(/-/g,'');
+    const past = CITY_DATES.filter(d=>d<=today).slice(-4);
+    const future = CITY_DATES.filter(d=>d>today).slice(0,2);
+    const toFetch = [...new Set([...past,...future])];
+    const results = await Promise.allSettled(toFetch.map(d=>getJSON(`${MLS_SITE}/scoreboard?dates=${d}`)));
+    let ctx = 'St. Louis City SC 2026 MLS Season\n\n';
+    const games=[];
+    results.forEach(r=>{
+      if(r.status!=='fulfilled')return;
+      (r.value.events||[]).forEach(ev=>{
+        const comp=(ev.competitions&&ev.competitions[0])||{};
+        const cs=comp.competitors||[];
+        if(cs.some(c=>String(c.team&&c.team.id||'')===CITY_ID)){games.push({ev,comp,cs,date:new Date(ev.date)});}
+      });
+    });
+    games.sort((a,b)=>a.date-b.date);
+    const completed=games.filter(g=>g.comp.status&&g.comp.status.type&&g.comp.status.type.completed);
+    const upcoming=games.filter(g=>!(g.comp.status&&g.comp.status.type&&g.comp.status.type.completed));
+    ctx += 'RECENT RESULTS:\n';
+    completed.slice(-4).forEach(g=>{
+      const us=g.cs.find(c=>String(c.team&&c.team.id||'')===CITY_ID)||{};
+      const them=g.cs.find(c=>String(c.team&&c.team.id||'')!==CITY_ID)||{};
+      const opp=(them.team&&them.team.shortDisplayName)||'Opponent';
+      const score=(us.score||0)+'-'+(them.score||0);
+      ctx += (us.homeAway==='home'?'vs':'@')+' '+opp+': '+score+'\n';
+    });
+    if(upcoming.length){
+      const next=upcoming[0];
+      const them=next.cs.find(c=>String(c.team&&c.team.id||'')!==CITY_ID)||{};
+      const opp=(them.team&&them.team.shortDisplayName)||'TBD';
+      ctx += '\nNEXT MATCH: '+next.date.toLocaleDateString()+' vs/@ '+opp+'\n';
+    }
+    try {
+      const sData=await getJSON('https://site.web.api.espn.com/apis/v2/sports/soccer/usa.1/standings?season=2026&type=0&level=1');
+      let entries=[];
+      const search=(obj)=>{if(!obj||typeof obj!=='object')return;if(Array.isArray(obj.entries)&&obj.entries.length){entries=obj.entries;return;}for(const k of Object.keys(obj)){if(typeof obj[k]==='object'){search(obj[k]);if(entries.length)return;}}};
+      search(sData);
+      if(entries.length){
+        ctx+='\nWESTERN CONFERENCE:\n';
+        entries.slice(0,12).forEach((e,i)=>{
+          const t=e.team||{};const name=t.shortDisplayName||t.displayName||'?';
+          const stats=e.stats||[];const gs=n=>(stats.find(s=>s.name===n||s.abbreviation===n)||{}).displayValue||'0';
+          ctx+=(i+1)+'. '+name+': '+gs('wins')+'W-'+gs('losses')+'L-'+gs('ties')+'D, '+gs('points')+'pts\n';
+        });
+      }
+    } catch(e){}
+    return ctx;
+  } catch(e) { return 'City SC data unavailable.'; }
+}
+
+// ── BUILD LEAGUE CONTEXT ──
+async function buildLeague() {
+  try {
+    const [standData, scoreData, leadData, eraData, whipData] = await Promise.allSettled([
+      espn('/baseball/mlb/standings', '', true),
+      espn('/baseball/mlb/scoreboard'),
+      espn('/baseball/mlb/leaders'),
+      espn('/baseball/mlb/leaders', 'categories=earnedRunAverage'),
+      espn('/baseball/mlb/leaders', 'categories=walksAndHitsPerInningPitched')
+    ]);
+
+    let ctx = 'MLB 2026 Season — League-Wide Data\n\n';
+
+    // Standings — recursive tree walker
+    if (standData.status === 'fulfilled') {
+      ctx += 'STANDINGS:\n';
+      const allDivs = [];
+      const walkStand = (node) => {
+        if (!node || typeof node !== 'object') return;
+        const entries = (node.standings && node.standings.entries) || node.entries || [];
+        if (entries.length && entries[0] && entries[0].team) {
+          allDivs.push({name: node.name || node.abbreviation || '', entries});
+          return;
+        }
+        (node.children || []).forEach(walkStand);
+      };
+      (standData.value.children || [standData.value]).forEach(walkStand);
+      allDivs.forEach(div => {
+        ctx += '\n' + div.name + ':\n';
+        div.entries.forEach((e,i) => {
+          const t = e.team || {};
+          const name = t.shortDisplayName || t.displayName || '?';
+          const stats = e.stats || [];
+          const gs = n => (stats.find(s=>s.name===n||s.abbreviation===n)||{}).displayValue||'—';
+          ctx += (i+1)+'. '+name+': '+(gs('wins')||gs('W'))+'-'+(gs('losses')||gs('L'))+' ('+(gs('winPercent')||gs('PCT'))+') GB:'+(gs('gamesBehind')||gs('GB'))+'\n';
+        });
+      });
+    }
+
+    // Today's scores
+    if (scoreData.status === 'fulfilled') {
+      const events = scoreData.value.events || [];
+      if (events.length) {
+        ctx += '\nTODAYS SCORES:\n';
+        events.forEach(ev => {
+          const comp = (ev.competitions && ev.competitions[0]) || {};
+          const cs = comp.competitors || [];
+          const away = cs.find(c=>c.homeAway==='away')||{};
+          const home = cs.find(c=>c.homeAway==='home')||{};
+          const awayName = (away.team&&away.team.abbreviation)||'?';
+          const homeName = (home.team&&home.team.abbreviation)||'?';
+          const status = (comp.status&&comp.status.type&&comp.status.type.shortDetail)||'';
+          const score = (comp.status&&comp.status.type&&comp.status.type.completed)
+            ? away.score+'-'+home.score+' Final'
+            : status;
+          ctx += awayName+' @ '+homeName+': '+score+'\n';
+        });
+      }
+    }
+
+    // Batting + pitching leaders
+    [leadData, eraData, whipData].forEach(d => {
+      if (d.status !== 'fulfilled') return;
+      const cats = d.value.categories || [];
+      cats.slice(0,10).forEach(cat => {
+        const name = cat.displayName || cat.name || '';
+        const leaders = (cat.leaders || []).slice(0, 10);
+        if (!leaders.length) return;
+        ctx += '\n'+name+':\n';
+        leaders.forEach((l, i) => {
+          const ath = l.athlete || {};
+          const team = (l.team && l.team.abbreviation) || '';
+          const val = l.displayValue || l.value || '—';
+          ctx += (i+1)+'. '+(ath.displayName||'?')+' ('+team+'): '+val+'\n';
+        });
+      });
+    });
+
+    return ctx;
+  } catch(e) { return 'MLB league data unavailable.'; }
+}
+
+// ── QUERY ──
+async function runQuery(question) {
+  const btn = $('queryBtn'), box = $('answerBox'), txt = $('answerText');
+  const tag = $('answerTag'), foot = $('answerFooter');
+  box.classList.add('visible');
+  txt.innerHTML = '<span class="thinking">Building context &amp; asking Claude&hellip;</span>';
+  foot.textContent = '';
+  tag.textContent = SPORT_CFG[curSport].tag;
+  btn.disabled = true;
+  try {
+    let context = '';
+    if (curSport === 'cardinals') context = await buildCardinals();
+    else if (curSport === 'nascar') context = await buildNASCAR();
+    else if (curSport === 'city') context = await buildCity();
+    else if (curSport === 'league') context = await buildLeague();
+    const resp = await fetch(SPORTS_AI_URL, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({question, context, sport: SPORT_CFG[curSport].tag})
+    });
+    const result = await resp.json();
+    if (result.error) { txt.innerHTML='<span style="color:#ff8275">API error: '+result.error.message+'</span>'; return; }
+    const text = (result.content&&result.content[0]&&result.content[0].text)||'No response.';
+    txt.innerHTML = text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
+    foot.textContent = 'Powered by Claude \u00b7 '+SPORT_CFG[curSport].tag+' \u00b7 '+new Date().toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'});
+    const entry = {sport:curSport, sportLabel:SPORT_CFG[curSport].tag, question, answer:text, time:Date.now()};
+    qaHistory.unshift(entry);
+    if(qaHistory.length>10) qaHistory=qaHistory.slice(0,10);
+    localStorage.setItem('sai_history', JSON.stringify(qaHistory));
+    renderHistory();
+  } catch(e) {
+    txt.innerHTML = '<span style="color:#ff8275">Could not reach the AI. Check your connection.</span>';
+  } finally { btn.disabled = false; }
+}
+
+// ── SPORT SWITCH ──
+function switchSport(sport) {
+  curSport = sport;
+  const cfg = SPORT_CFG[sport];
+  document.body.className = cfg.bodyClass;
+  $('logoIcon').textContent = cfg.icon;
+  $('queryLabel').textContent = cfg.label;
+  $('queryInput').placeholder = cfg.chips[0]+'?';
+  $('answerBox').classList.remove('visible');
+  document.querySelectorAll('.sport-tab').forEach(t=>t.classList.toggle('active', t.dataset.sport===sport));
+  $('chips').innerHTML = cfg.chips.map(c=>'<span class="chip">'+c+'</span>').join('');
+}
+
+// ── HISTORY ──
+function renderHistory() {
+  if(!qaHistory.length){$('historySection').style.display='none';return;}
+  $('historySection').style.display='block';
+  $('historyList').innerHTML = qaHistory.slice(0,5).map((h,i)=>
+    '<div class="history-item" data-idx="'+i+'">' +
+    '<div class="history-q">'+h.question+'</div>' +
+    '<div class="history-meta">'+h.sportLabel+' \u00b7 '+new Date(h.time).toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})+'</div>' +
+    '<div class="history-a">'+h.answer.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').substring(0,200)+(h.answer.length>200?'\u2026':'')+'</div>' +
+    '</div>'
+  ).join('');
+}
+
+// ── EVENTS ──
+$('sportTabs').addEventListener('click', e=>{
+  const tab=e.target.closest('.sport-tab'); if(!tab)return;
+  switchSport(tab.dataset.sport);
+});
+$('queryBtn').addEventListener('click',()=>{const q=$('queryInput').value.trim();if(q)runQuery(q);});
+$('queryInput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();const q=$('queryInput').value.trim();if(q)runQuery(q);}});
+$('queryInput').addEventListener('input',function(){this.style.height='auto';this.style.height=Math.min(this.scrollHeight,140)+'px';});
+$('chips').addEventListener('click',e=>{const c=e.target.closest('.chip');if(!c)return;$('queryInput').value=c.textContent;runQuery(c.textContent);});
+$('historyList').addEventListener('click',e=>{
+  const item=e.target.closest('.history-item'); if(!item)return;
+  const h=qaHistory[item.dataset.idx]; if(!h)return;
+  switchSport(h.sport);
+  $('queryInput').value=h.question;
+  runQuery(h.question);
+});
+$('historyClear').addEventListener('click',()=>{qaHistory=[];localStorage.removeItem('sai_history');renderHistory();});
+
+// ── INIT ──
+renderHistory();
+</script>
+</body>
+</html>
